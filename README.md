@@ -88,6 +88,15 @@ Retrieve the clusterMaster EventEmitter to be able to listen
 to clusterMaster events. This emitter is also returned from
 the original clusterMaster() constructor.
 
+### clusterMaster.debug(arg1, arg2, ...)
+
+Arguments passed to debug are formatted with util.format and output
+to stdout and any REPL's.
+
+```javascript
+clusterMaster.debug('The number one is %s', 1);
+```
+
 ## Configs
 
 The `exec`, `env`, `argv`, and `silent` configs are passed to the

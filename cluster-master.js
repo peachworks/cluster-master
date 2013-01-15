@@ -18,6 +18,7 @@ var cluster = require("cluster")
 , skepticTimeout = 2000  // default time (ms) to live before stopping old
 
 exports = module.exports = clusterMaster
+exports.debug = debug
 exports.emitter = emitter
 exports.restart = emitAndRestart
 exports.resize = emitAndResize
