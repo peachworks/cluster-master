@@ -131,3 +131,59 @@ before the action is carried out.
 * `restart` - fired on clusterMaster.restart()
 * `quit` - fired on clusterMaster.quit()
 * `quitHard` - fired on clusterMaster.quitHard()
+* `repl` - where to have REPL listen, defaults to `env.CLUSTER_MASTER_REPL` || 'cluster-master-socket'
+  * if `repl` is null or false - REPL is disabled and will not be started
+  * if `repl` is string path - REPL will listen on unix domain socket to this path
+  * if `repl` is an integer port - REPL will listen on TCP 0.0.0.0:port
+  * if `repl` is an object with `address` and `port`, then REPL will listen on TCP address:PORT
+
+Examples of configuring `repl`
+
+```javascript
+var config = { repl: false }                       // disable REPL
+var config = { repl: '/tmp/cluster-master-sock' }  // unix domain socket
+var config = { repl: 3001 }                        // tcp socket 0.0.0.0:3001
+var config = { repl: { address: '127.0.0.1', port: 3002 }}  // tcp 127.0.0.1:3002
+```
+
+Note: be careful when using TCP for your REPL since anyone on the
+network can connect to your REPL (no security). So either disable
+the REPL or use a unix domain socket which requires local access
+(or ssh access) to the server.
+
+## REPL
+
+Cluster-master provides a REPL into the master process so you can inspect
+the state of your cluster. By default the REPL is accessible by a socket
+written to the root of the directory, but you can override it with the
+`CLUSTER_MASTER_REPL` environment variable. You can access the REPL with
+nc or [socat](http://www.dest-unreach.org/socat/) like so:
+
+
+```bash
+nc -U ./cluster-master-socket
+
+# OR
+
+socat ./cluster-master-socket stdin
+```
+
+The REPL provides you with access to these objects or functions:
+
+* `help`        - display these commands
+* `repl`        - access the REPL
+* `resize(n)`   - resize the cluster to `n` workers
+* `restart(cb)` - gracefully restart workers, cb is optional
+* `quit()`      - gracefully stop workers and master
+* `quitHard()`  - forcefully kill workers and master
+* `cluster`     - node.js cluster module
+* `size`        - current cluster size
+* `connections` - number of REPL connections to master
+* `workers`     - current workers
+* `select(fld)` - map of id to `field` (from workers)
+* `pids`        - map of id to pids
+* `ages`        - map of id to worker ages
+* `states`      - map of id to worker states
+* `debug(a1)`   - output `a1` to stdout and all REPLs
+* `sock`        - this REPL socket'
+

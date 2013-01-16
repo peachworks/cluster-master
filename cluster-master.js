@@ -9,6 +9,7 @@ var cluster = require("cluster")
 , os = require("os")
 , onmessage
 , repl = require('repl')
+, replAddressPath = process.env.CLUSTER_MASTER_REPL || 'cluster-master-socket'
 , net = require('net')
 , EventEmitter = require('events').EventEmitter
 , masterEmitter = new EventEmitter()
@@ -60,6 +61,8 @@ function clusterMaster (config) {
 
   cluster._clusterMaster = module.exports
 
+  if (typeof config.repl !== 'undefined') replAddressPath = config.repl  // allow null and false
+
   onmessage = config.onMessage || config.onmessage
 
   if (config.stopTimeout) stopTimeout = config.stopTimeout
@@ -84,7 +87,7 @@ function clusterMaster (config) {
   forkListener()
 
   // now make it the right size
-  debug('resize and then setup repl')
+  debug((replAddressPath) ? 'resize and then setup repl' : 'resize')
   resize(setupRepl)
 
   return masterEmitter
@@ -100,11 +103,19 @@ function select (field) {
 }
 
 function setupRepl () {
+  if (!replAddressPath) return  // was disabled
+
   debug('setup repl')
-  var socket = path.resolve('cluster-master-socket')
-  if (process.env.CLUSTER_MASTER_REPL) {
-    socket = process.env.CLUSTER_MASTER_REPL
+  var socket = null
+  var socketAddress = undefined
+  if (typeof replAddressPath === 'string') {
+    socket = path.resolve(replAddressPath)
+  } else if (typeof replAddressPath === 'number') {
+    socket = replAddressPath
     if (!isNaN(socket)) socket = +socket
+  } else if (replAddressPath.address && replAddressPath.port) {
+    socket = replAddressPath.port
+    socketAddress = replAddressPath.address
   }
   var connections = 0
 
@@ -119,7 +130,7 @@ function setupRepl () {
 
   function startRepl () {
     var sockId = 0
-    net.createServer(function (sock) {
+    var replServer = net.createServer(function (sock) {
       connections ++
       replEnded = false
 
@@ -128,14 +139,35 @@ function setupRepl () {
 
       sock.write('Starting repl #' + sock.id)
       var r = repl.start({
-        prompt: 'ClusterMaster ' + process.pid + ' ' + sock.id + '> ',
+        prompt: 'ClusterMaster (`help` for cmds) ' + process.pid + ' ' + sock.id + '> ',
         input: sock,
         output: sock,
         terminal: true,
         useGlobal: false,
         ignoreUndefined: true
       })
+
+      var helpCommands = [
+        'help        - display these commands',
+        'repl        - access the REPL',
+        'resize(n)   - resize the cluster to `n` workers',
+        'restart(cb) - gracefully restart workers, cb is optional',
+        'quit()      - gracefully stop workers and master',
+        'quitHard()  - forcefully kill workers and master',
+        'cluster     - node.js cluster module',
+        'size        - current cluster size',
+        'connections - number of REPL connections to master',
+        'workers     - current workers',
+        'select(fld) - map of id to field (from workers)',
+        'pids        - map of id to pids',
+        'ages        - map of id to worker ages',
+        'states      - map of id to worker states',
+        'debug(a1)   - output `a1` to stdout and all REPLs',
+        'sock        - this REPL socket'
+      ]
+
       var context = {
+        help: helpCommands,
         repl: r,
         resize: emitAndResize,
         restart: emitAndRestart,
@@ -198,9 +230,17 @@ function setupRepl () {
         delete debugStreams['repl-' + sockId]
       }
 
-    }).listen(socket, function () {
-      debug('ClusterMaster repl listening on '+socket)
     })
+
+    if (socketAddress) {
+      replServer.listen(socket, socketAddress, function () {
+        debug('ClusterMaster repl listening on '+socketAddress+':'+socket)
+      })
+    } else {
+      replServer.listen(socket,  function () {
+        debug('ClusterMaster repl listening on '+socket)
+      })
+    }
   }
 }
 
