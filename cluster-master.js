@@ -152,8 +152,8 @@ function setupRepl () {
         'repl        - access the REPL',
         'resize(n)   - resize the cluster to `n` workers',
         'restart(cb) - gracefully restart workers, cb is optional',
-        'quit()      - gracefully stop workers and master',
-        'quitHard()  - forcefully kill workers and master',
+        'stop()      - gracefully stop workers and master',
+        'kill()      - forcefully kill workers and master',
         'cluster     - node.js cluster module',
         'size        - current cluster size',
         'connections - number of REPL connections to master',
@@ -171,8 +171,8 @@ function setupRepl () {
         repl: r,
         resize: emitAndResize,
         restart: emitAndRestart,
-        quit: emitAndQuit,
-        quitHard: emitAndQuitHard,
+        stop: emitAndQuit,
+        kill: emitAndQuitHard,
         cluster: cluster,
         get size () {
           return clusterSize
