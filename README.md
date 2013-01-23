@@ -3,6 +3,13 @@
 A module for taking advantage of the built-in `cluster` module in node
 v0.8 and above.
 
+Modified from Isaac's original version:
+
+ - events
+ - repl config, help, docs
+ - configurable timeouts
+ - exports `debug` method for ability to write to all REPLs and console
+
 Your main `server.js` file uses this module to fire up a cluster of
 workers.  Those workers then do the actual server stuff (using socket.io,
 express, tako, raw node, whatever; any TCP/TLS/HTTP/HTTPS server would
@@ -56,6 +63,14 @@ clusterMaster.emitter()
   .on('restart', function () { })
   .on('quit', function () { })
   .on('quitHard', function () { });
+```
+
+## Install
+
+Use from github or via npm
+
+```bash
+npm install https://github.com/jeffbski/cluster-master/tarball/master
 ```
 
 ## Methods
@@ -127,8 +142,9 @@ clusterMaster emits events on clusterMaster.emitter() when its methods
 are called which allows you to respond and do additional cleanup right
 before the action is carried out.
 
-* `resize` - fired on clusterMaster.resize(n), listener ex: fn(clusterSize)
-* `restart` - fired on clusterMaster.restart(), listener ex: fn(oldWorkers)
+* `disconnect` - fired before worker is to be disconnected, listener ex: `fn(worker)`
+* `resize` - fired on clusterMaster.resize(n), listener ex: `fn(clusterSize)`
+* `restart` - fired on clusterMaster.restart(), listener ex: `fn(oldWorkers)`
   `restartComplete` - fired when restart is completed
 * `quit` - fired on clusterMaster.quit()
 * `quitHard` - fired on clusterMaster.quitHard()

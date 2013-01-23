@@ -350,7 +350,7 @@ function restart (cb) {
 
     if (quitting) {
       if (worker && worker.process.connected) {
-        worker.disconnect()
+        emitAndDisconnect(worker)
       }
       return graceful()
     }
@@ -361,7 +361,7 @@ function restart (cb) {
         var timer = setTimeout(function () {
           newbie.removeListener('exit', skeptic)
           if (worker && worker.process.connected) {
-            worker.disconnect()
+            emitAndDisconnect(worker)
           }
           graceful()
         }, skepticTimeout)
@@ -375,7 +375,7 @@ function restart (cb) {
     } else {
       cluster.once('listening', function (newbie) {
         if (worker && worker.process.connected) {
-          worker.disconnect()
+          emitAndDisconnect(worker)
         }
       })
       graceful()
@@ -427,7 +427,7 @@ function resize (n, cb) {
     debug('resizing down', current[i])
     worker.once('exit', then())
     if (worker && worker.process.connected) {
-      worker.disconnect()
+      emitAndDisconnect(worker)
     }
   }
 }
@@ -511,4 +511,9 @@ function emitAndQuit() {
 function emitAndQuitHard() {
   masterEmitter.emit('quitHard')
   process.nextTick(function () { quitHard() })
+}
+
+function emitAndDisconnect(worker) {
+  masterEmitter.emit('disconnect', worker)
+  process.nextTick(function () { worker.disconnect() })
 }
