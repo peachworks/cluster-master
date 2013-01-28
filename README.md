@@ -136,18 +136,6 @@ The `exec`, `env`, `argv`, and `silent` configs are passed to the
   before shutting previous worker down during restart, default 2000
   (2 seconds)
 
-## Events
-
-clusterMaster emits events on clusterMaster.emitter() when its methods
-are called which allows you to respond and do additional cleanup right
-before the action is carried out.
-
-* `disconnect` - fired before worker is to be disconnected, listener ex: `fn(worker)`
-* `resize` - fired on clusterMaster.resize(n), listener ex: `fn(clusterSize)`
-* `restart` - fired on clusterMaster.restart(), listener ex: `fn(oldWorkers)`
-  `restartComplete` - fired when restart is completed
-* `quit` - fired on clusterMaster.quit()
-* `quitHard` - fired on clusterMaster.quitHard()
 * `repl` - where to have REPL listen, defaults to `env.CLUSTER_MASTER_REPL` || 'cluster-master-socket'
   * if `repl` is null or false - REPL is disabled and will not be started
   * if `repl` is string path - REPL will listen on unix domain socket to this path
@@ -205,3 +193,15 @@ The REPL provides you with access to these objects or functions:
 * `sock`        - this REPL socket'
 * `.exit`       - close this connection to the REPL
 
+## Events
+
+clusterMaster emits events on clusterMaster.emitter() when its methods
+are called which allows you to respond and do additional cleanup right
+before the action is carried out.
+
+* `disconnect` - fired before worker is to be disconnected, listener ex: `fn(worker)`
+* `resize` - fired on clusterMaster.resize(n), listener ex: `fn(clusterSize)`
+* `restart` - fired on clusterMaster.restart(), listener ex: `fn(oldWorkers)`
+  `restartComplete` - fired when restart is completed
+* `quit` - fired on clusterMaster.quit()
+* `quitHard` - fired on clusterMaster.quitHard()
