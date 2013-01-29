@@ -136,6 +136,27 @@ The `exec`, `env`, `argv`, and `silent` configs are passed to the
   before shutting previous worker down during restart, default 2000
   (2 seconds)
 
+* `replHelp` - Array of additional text lines to add to repl `help` command
+
+```javascript
+var config = {
+  replHelp: [
+      'process     - access node.js process',
+      '.break      - interrupt current command'
+  ]
+};
+```
+
+* `replContext` - Object of additional properties or functions to add to the REPL context
+
+```javascript
+var config = {
+  replContext: {
+    foo: fooObject  // adds foo to the REPL which exposes the fooObject
+  }
+};
+```
+
 * `repl` - where to have REPL listen, defaults to `env.CLUSTER_MASTER_REPL` || 'cluster-master-socket'
   * if `repl` is null or false - REPL is disabled and will not be started
   * if `repl` is string path - REPL will listen on unix domain socket to this path
