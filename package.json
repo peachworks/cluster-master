@@ -1,14 +1,28 @@
 {
-  "author": "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)",
-  "name": "cluster-master",
-  "description": "A helper script for managing a cluster of node worker servers",
-  "version": "0.0.10",
+  "contributors": [
+    "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)",
+    "Jeff Barczewski <jeff.barczewski@gmail.com> (http://codewinds.com/blog.html)",
+    "Sean McCullough <mcculloughsean@gmail.com>"
+  ],
+  "name": "cluster-master-ext",
+  "description": "A module for taking advantage of the built-in `cluster` module in node v0.8+, enables rolling worker restarts, resizing, repl, events, configurable timeouts, debug method. Extended version of cluster-master",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/isaacs/cluster-master.git"
+    "url": "git://github.com/jeffbski/cluster-master.git"
   },
   "main": "cluster-master.js",
   "engines": {
     "node": ">=0.7.7"
-  }
+  },
+  "bugs" : { "url": "http://github.com/jeffbski/cluster-master/issues" },
+  "license": "BSD",
+  "keywords": [
+    "cluster",
+    "master",
+    "worker",
+    "repl",
+    "rolling",
+    "resize"
+  ]
 }

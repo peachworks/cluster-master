@@ -1,14 +1,18 @@
 # cluster-master
 
 A module for taking advantage of the built-in `cluster` module in node
-v0.8 and above.
+v0.8+, enables rolling worker restarts, resizing, repl, events,
+configurable timeouts, debug method.
 
-Modified from Isaac's original version:
+Modified from Isaac's original version `cluster-master` adding:
 
  - events
  - repl config, help, docs
  - configurable timeouts
  - exports `debug` method for ability to write to all REPLs and console
+
+Note: I had provided these changes as pull requests back to the original author,
+but after waiting for 10 months, I will now provide this as an alternative module
 
 Your main `server.js` file uses this module to fire up a cluster of
 workers.  Those workers then do the actual server stuff (using socket.io,
@@ -20,14 +24,15 @@ As the name implies, it should only be run in the master module, not in
 any cluster workers.
 
 ```javascript
-var clusterMaster = require("cluster-master")
+var clusterMaster = require("cluster-master-ext")
 
 // most basic usage: just specify the worker
 // Spins up as many workers as you have CPUs
 //
 // Note that this is VERY WRONG for a lot of multi-tenanted
 // VPS environments where you may have 32 CPUs but only a
-// 256MB RSS cap or something.
+// 256MB RSS cap or something. ie. specify the size to
+// have what makes sense
 clusterMaster("worker.js")
 
 // more advanced usage.  Specify configs.
@@ -70,7 +75,7 @@ clusterMaster.emitter()
 Use from github or via npm
 
 ```bash
-npm install https://github.com/jeffbski/cluster-master/tarball/master
+npm install cluster-master-ext
 ```
 
 ## Methods
@@ -135,6 +140,28 @@ The `exec`, `env`, `argv`, and `silent` configs are passed to the
 * `skepticTimeout` - Time in milliseconds to wait for worker to live
   before shutting previous worker down during restart, default 2000
   (2 seconds)
+* `silenceDebug` - if true, then silences the normal console debug messages, default false (output will still continue to repls regardless)
+
+* `replHelp` - Array of additional text lines to add to repl `help` command
+
+```javascript
+var config = {
+  replHelp: [
+      'process     - access node.js process',
+      '.break      - interrupt current command'
+  ]
+};
+```
+
+* `replContext` - Object of additional properties or functions to add to the REPL context
+
+```javascript
+var config = {
+  replContext: {
+    foo: fooObject  // adds foo to the REPL which exposes the fooObject
+  }
+};
+```
 
 * `repl` - where to have REPL listen, defaults to `env.CLUSTER_MASTER_REPL` || 'cluster-master-socket'
   * if `repl` is null or false - REPL is disabled and will not be started
@@ -199,9 +226,20 @@ clusterMaster emits events on clusterMaster.emitter() when its methods
 are called which allows you to respond and do additional cleanup right
 before the action is carried out.
 
+* `debug` - fired when debug() is called to output messages, listener ex: `fn(msg, args, ...)`
 * `disconnect` - fired before worker is to be disconnected, listener ex: `fn(worker)`
 * `resize` - fired on clusterMaster.resize(n), listener ex: `fn(clusterSize)`
 * `restart` - fired on clusterMaster.restart(), listener ex: `fn(oldWorkers)`
   `restartComplete` - fired when restart is completed
 * `quit` - fired on clusterMaster.quit()
 * `quitHard` - fired on clusterMaster.quitHard()
+
+## LICENSE
+
+BSD
+
+## Authors and Contributors
+
+ - Isaac Z. Schlueter, author of the original project `cluster-master`
+ - Jeff Barczewski
+ - Sean McCullough
