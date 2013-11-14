@@ -28,9 +28,15 @@ exports.resize = emitAndResize
 exports.quitHard = emitAndQuitHard
 exports.quit = emitAndQuit
 
+var silenceDebug = false; // may be reset by config.silenceDebug
 var debugStreams = {}
 function debug () {
-  console.error.apply(console, arguments)
+  if (!silenceDebug) console.error.apply(console, arguments);
+
+  // emit debug event with original arguments
+  var emitArgs = Array.prototype.slice.call(arguments);
+  emitArgs.unshift('debug');
+  emitter().emit.apply(emitter(), emitArgs);
 
   var msg = util.format.apply(util, arguments)
   Object.keys(debugStreams).forEach(function (s) {
@@ -75,6 +81,8 @@ function clusterMaster (config) {
   clusterSize = config.size || os.cpus().length
 
   env = config.env
+
+  silenceDebug = config.silenceDebug;
 
   var masterConf = { exec: path.resolve(config.exec) }
   if (config.silent) masterConf.silent = true
