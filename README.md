@@ -129,8 +129,8 @@ The `exec`, `env`, `argv`, and `silent` configs are passed to the
 * `size` - Starting cluster size.  Default = CPU count
 * `signals` - Boolean, default=true.  Set up listeners to:
   * `SIGHUP` - restart
-  * `SIGINT` - quit
-  * `SIGKILL` - quitHard
+  * `SIGINT` - quit (control-c)
+  * `SIGABRT` - quitHard
 * `onMessage` - Method that gets called when workers send a message to
   the parent.  Called in the context of the worker, so you can reply by
   looking at `this`.
