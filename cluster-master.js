@@ -29,6 +29,8 @@ exports.quitHard = emitAndQuitHard
 exports.quit = emitAndQuit
 
 var silenceDebug = false; // may be reset by config.silenceDebug
+var aliveEvent = 'listening'; // event to consider child alive
+
 var debugStreams = {}
 function debug () {
   if (!silenceDebug) console.error.apply(console, arguments);
@@ -83,6 +85,7 @@ function clusterMaster (config) {
   env = config.env
 
   silenceDebug = config.silenceDebug;
+  if (config.aliveEvent) aliveEvent = config.aliveEvent;
 
   var masterConf = { exec: path.resolve(config.exec) }
   if (config.silent) masterConf.silent = true
@@ -388,7 +391,7 @@ function restart (cb) {
 
     // start a new one. if it lives for 2 seconds, kill the worker.
     if (first) {
-      cluster.once('listening', function (newbie) {
+      cluster.once(aliveEvent, function (newbie) {
         var timer = setTimeout(function () {
           newbie.removeListener('exit', skeptic)
           if (worker && worker.process.connected) {
@@ -404,7 +407,7 @@ function restart (cb) {
         }
       })
     } else {
-      cluster.once('listening', function (newbie) {
+      cluster.once(aliveEvent, function (newbie) {
         if (worker && worker.process.connected) {
           emitAndDisconnect(worker)
         }
@@ -451,7 +454,7 @@ function resize (n, cb) {
   // make us have the right number of them.
   if (req > 0) while (req -- > 0) {
     debug('resizing up', req)
-    cluster.once('listening', then())
+    cluster.once(aliveEvent, then())
     cluster.fork(env)
   } else for (var i = clusterSize; i < c; i ++) {
     var worker = cluster.workers[current[i]]
