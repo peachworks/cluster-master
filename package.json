@@ -6,7 +6,7 @@
   ],
   "name": "cluster-master-ext",
   "description": "A module for taking advantage of the built-in `cluster` module in node v0.8+, enables rolling worker restarts, resizing, repl, events, configurable timeouts, debug method. Extended version of cluster-master",
-  "version": "0.1.1",
+  "version": "1.0.1",
   "repository": {
     "type": "git",
     "url": "git://github.com/jeffbski/cluster-master.git"
@@ -15,7 +15,9 @@
   "engines": {
     "node": ">=0.7.7"
   },
-  "bugs" : { "url": "http://github.com/jeffbski/cluster-master/issues" },
+  "bugs": {
+    "url": "http://github.com/jeffbski/cluster-master/issues"
+  },
   "license": "BSD",
   "keywords": [
     "cluster",
