@@ -1,4 +1,4 @@
-# cluster-master
+# cluster-master-ext
 
 A module for taking advantage of the built-in `cluster` module in node
 v0.8+, enables rolling worker restarts, resizing, repl, events,
@@ -129,8 +129,8 @@ The `exec`, `env`, `argv`, and `silent` configs are passed to the
 * `size` - Starting cluster size.  Default = CPU count
 * `signals` - Boolean, default=true.  Set up listeners to:
   * `SIGHUP` - restart
-  * `SIGINT` - quit
-  * `SIGKILL` - quitHard
+  * `SIGINT` - quit (control-c)
+  * `SIGABRT` - quitHard
 * `onMessage` - Method that gets called when workers send a message to
   the parent.  Called in the context of the worker, so you can reply by
   looking at `this`.
@@ -141,6 +141,7 @@ The `exec`, `env`, `argv`, and `silent` configs are passed to the
   before shutting previous worker down during restart, default 2000
   (2 seconds)
 * `silenceDebug` - if true, then silences the normal console debug messages, default false (output will still continue to repls regardless)
+* `aliveEvent` - the cluster event to wait for to consider the child process to be alive, set to `online` for non http workers, default `listening`
 
 * `replHelp` - Array of additional text lines to add to repl `help` command
 
