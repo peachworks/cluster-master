@@ -5,7 +5,7 @@
     "Sean McCullough <mcculloughsean@gmail.com>"
   ],
   "name": "cluster-master-ext",
-  "description": "A module for taking advantage of the built-in `cluster` module in node v0.8+, enables rolling worker restarts, resizing, repl, events, configurable timeouts, debug method. Extended version of cluster-master",
+  "description": "A module for taking advantage of the built-in `cluster` module in node v0.8+, enables rolling worker restarts, resizing, repl, events, configurable timeouts, debug method. Zero downtime deploy of workers. Extended version of cluster-master",
   "version": "0.1.1",
   "repository": {
     "type": "git",
@@ -20,6 +20,9 @@
   "keywords": [
     "cluster",
     "master",
+    "zero",
+    "downtime",
+    "deploy",
     "worker",
     "repl",
     "rolling",
