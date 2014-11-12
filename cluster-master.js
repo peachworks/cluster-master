@@ -28,6 +28,19 @@ exports.resize = emitAndResize
 exports.quitHard = emitAndQuitHard
 exports.quit = emitAndQuit
 
+var nextWorkerIdx = 0;
+var replaceWorkerIdxs = [];
+function getNextWorkerIdx() {
+    // if has been resized down, filter out invalid indexes
+    replaceWorkerIdxs = replaceWorkerIdxs.filter(function (wid) {
+      return wid < clusterSize;
+    });
+    if (replaceWorkerIdxs.length) { return replaceWorkerIdxs.shift(); }
+    // roll over on clusterSize, used when doing restart
+    if (nextWorkerIdx >= clusterSize) { nextWorkerIdx = 0; }
+    return nextWorkerIdx++;
+}
+
 var silenceDebug = false; // may be reset by config.silenceDebug
 var debugStreams = {}
 function debug () {
@@ -80,7 +93,7 @@ function clusterMaster (config) {
 
   clusterSize = config.size || os.cpus().length
 
-  env = config.env
+  env = config.env || {};
 
   silenceDebug = config.silenceDebug;
 
@@ -307,7 +320,8 @@ function forkListener () {
       clearTimeout(disconnectTimer)
 
       if (!worker.suicide) {
-        debug("Worker %j exited abnormally", id)
+        debug("Worker %j exited abnormally, idx:", id, worker.clusterIdx);
+        replaceWorkerIdxs.push(worker.clusterIdx);
         // don't respawn right away if it's a very fast failure.
         // otherwise server crashes are hard to detect from monitors.
         if (worker.age < 2000) {
@@ -412,11 +426,20 @@ function restart (cb) {
       graceful()
     }
 
-    cluster.fork(env)
+    forkChild();
   }
 }
 
-
+function forkChild() {
+    var childEnv = Object.keys(env).reduce(function (accum, k) {
+      accum[k] = env[k];
+      return accum;
+    }, {});
+    var nextIdx = getNextWorkerIdx();
+    childEnv['CLUSTER_IDX'] = nextIdx;
+    var cp = cluster.fork(childEnv);
+    cp.clusterIdx = nextIdx;
+}
 
 var resizing = false
 function resize (n, cb) {
@@ -426,10 +449,21 @@ function resize (n, cb) {
     return cb && cb()
   }
 
-  if (n >= 0) clusterSize = n
-  var current = Object.keys(cluster.workers)
-  , c = current.length
-  , req = clusterSize - c
+  if (n >= 0) {
+      if (n < clusterSize) { nextWorkerIdx = n; }
+      clusterSize = n;
+  }
+
+  // sort current by clusterIdx so if we remove, we take largest
+  var current = Object.keys(cluster.workers).sort(function (a, b) {
+    var aCidx = cluster.workers[a].clusterIdx;
+    var bCidx = cluster.workers[b].clusterIdx;
+    if (aCidx < bCidx) { return -1; }
+    if (bCidx < aCidx) { return 1; }
+    return 0;
+  });
+  var c = current.length;
+  var req = clusterSize - c;
 
   if (c === clusterSize) {
     resizing = false
@@ -452,7 +486,7 @@ function resize (n, cb) {
   if (req > 0) while (req -- > 0) {
     debug('resizing up', req)
     cluster.once('listening', then())
-    cluster.fork(env)
+    forkChild();
   } else for (var i = clusterSize; i < c; i ++) {
     var worker = cluster.workers[current[i]]
     debug('resizing down', current[i])
