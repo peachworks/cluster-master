@@ -389,7 +389,7 @@ function restart (cb) {
     if (i >= current.length) {
       debug("graceful completion")
       restarting = false
-      return cb && cb()
+      return (cb && typeof cb === 'function') && cb()
     }
 
     var first = (i === 0)
@@ -449,7 +449,7 @@ function resize (n, cb) {
   if (typeof n === 'function') cb = n, n = clusterSize
 
   if (resizing) {
-    return cb && cb()
+    return (cb && typeof cb === 'function') && cb()
   }
 
   if (n >= 0) {
@@ -470,7 +470,7 @@ function resize (n, cb) {
 
   if (c === clusterSize) {
     resizing = false
-    return cb && cb()
+    return (cb && typeof cb === 'function') && cb()
   }
 
   var thenCnt = 0
@@ -481,7 +481,7 @@ function resize (n, cb) {
   function then2 () {
     if (--thenCnt === 0) {
       resizing = false
-      return cb && cb()
+      return (cb && typeof cb === 'function') && cb()
     }
   }
 
@@ -567,7 +567,7 @@ function emitAndRestart(cb) {
   process.nextTick(function () {
     restart(function () {
       masterEmitter.emit('restartComplete');
-      if (cb) cb();
+      if (cb && typeof cb === 'function') cb();
     });
   });
 }
